@@ -42,7 +42,7 @@ func TestMain(t *testing.T) {
 	testNum := 123
 	testText := "', 321); INSERT INTO test (text) VALUES ('pwned')"
 
-	// TODO: tell the go sql interface that the args are expected
+	// TODO: Filling placeholders
 	insertRes, err := db.Exec("INSERT INTO test (text, number) VALUES (?, ?)", testText, testNum)
 
 	if err != nil {

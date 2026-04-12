@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql/driver"
 	"fmt"
+	"strings"
 )
 
 /*
@@ -11,8 +12,9 @@ import (
 import "C"
 
 type sqliteStmt struct {
-	handle     *C.sqlite3_stmt
-	connection *sqliteConn
+	handle      *C.sqlite3_stmt
+	connection  *sqliteConn
+	queryString string
 }
 
 func (s *sqliteStmt) Query(args []driver.Value) (driver.Rows, error) {
@@ -48,7 +50,7 @@ func (s *sqliteStmt) Exec(args []driver.Value) (driver.Result, error) {
 }
 
 func (s *sqliteStmt) NumInput() int {
-	return 0
+	return strings.Count(s.queryString, "?")
 }
 
 func (s *sqliteStmt) Close() error {

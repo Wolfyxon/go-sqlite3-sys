@@ -33,8 +33,9 @@ func (c *sqliteConn) Prepare(query string) (driver.Stmt, error) {
 	}
 
 	return &sqliteStmt{
-		handle:     cStmt,
-		connection: c,
+		handle:      cStmt,
+		connection:  c,
+		queryString: query,
 	}, nil
 }
 
