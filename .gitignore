@@ -1,0 +1,7 @@
+# Files
+main
+
+# File formats
+*.exe
+*.sql
+*.db
