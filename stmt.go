@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql/driver"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -18,12 +19,24 @@ type sqliteStmt struct {
 }
 
 func (s *sqliteStmt) Query(args []driver.Value) (driver.Rows, error) {
+	bindErr := s.bindArgs(args)
+
+	if bindErr != nil {
+		return nil, bindErr
+	}
+
 	return &sqliteRows{
 		stmt: s,
 	}, nil
 }
 
 func (s *sqliteStmt) Exec(args []driver.Value) (driver.Result, error) {
+	bindErr := s.bindArgs(args)
+
+	if bindErr != nil {
+		return nil, bindErr
+	}
+
 	var stepRes C.int
 
 	for true {
@@ -58,6 +71,34 @@ func (s *sqliteStmt) Close() error {
 
 	if res != 0 {
 		return fmt.Errorf("Failed to finalize sqlite statement: %d", res)
+	}
+
+	return nil
+}
+
+func (s *sqliteStmt) bindArgs(args []driver.Value) error {
+	for i, v := range args {
+		cI := C.int(i + 1)
+		valType := reflect.TypeOf(v).Name()
+
+		var bindRes any
+
+		switch valType {
+		case "int", "int32":
+			bindRes = C.sqlite3_bind_int(s.handle, cI, C.int(v.(int)))
+		case "int64":
+			bindRes = C.sqlite3_bind_int64(s.handle, cI, C.sqlite3_int64(v.(int64)))
+		case "string":
+			bindRes = C.sqlite3_bind_text(s.handle, cI, C.CString(v.(string)), -1, C.SQLITE_STATIC)
+		case "nil":
+			bindRes = C.sqlite3_bind_null(s.handle, cI)
+		default:
+			return fmt.Errorf("Unsupported type '%s'", valType)
+		}
+
+		if bindRes != C.int(0) {
+			return fmt.Errorf("Failed to bind arg %d: %d", i, bindRes)
+		}
 	}
 
 	return nil

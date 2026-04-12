@@ -20,7 +20,7 @@ func TestMain(t *testing.T) {
 
 	tableRes, err := db.Exec(
 		"CREATE TABLE IF NOT EXISTS test (" +
-			"text VARCHAR(64)," +
+			"text VARCHAR(1024)," +
 			"number INTEGER" +
 			")",
 	)
