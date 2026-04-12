@@ -3,9 +3,11 @@ package sqlite
 import (
 	"database/sql/driver"
 	"fmt"
+	"unsafe"
 )
 
 /*
+#include <stdlib.h>
 #include <sqlite3.h>
 */
 import "C"
@@ -27,6 +29,7 @@ func (c *sqliteConn) Prepare(query string) (driver.Stmt, error) {
 	var cUnusedSql *C.char
 
 	res := C.sqlite3_prepare_v2(c.handle, cQuery, cLen, &cStmt, &cUnusedSql)
+	C.free(unsafe.Pointer(cQuery))
 
 	if res != 0 {
 		return nil, fmt.Errorf("sqlite error: %d", res)
@@ -40,9 +43,12 @@ func (c *sqliteConn) Prepare(query string) (driver.Stmt, error) {
 }
 
 func (c *sqliteConn) Begin() (driver.Tx, error) {
-
 	var handle *C.sqlite3
-	res := C.sqlite3_open(C.CString(c.filePath), &handle)
+
+	cFilePath := C.CString(c.filePath)
+	res := C.sqlite3_open(cFilePath, &handle)
+
+	C.free(unsafe.Pointer(cFilePath))
 
 	if res != 0 {
 		return nil, fmt.Errorf("Failed to open sqlite database: %d", res)

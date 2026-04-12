@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"unsafe"
 )
 
 /*
 #include <sqlite3.h>
+#include <stdlib.h>
 */
 import "C"
 
@@ -89,7 +91,9 @@ func (s *sqliteStmt) bindArgs(args []driver.Value) error {
 		case "int64":
 			bindRes = C.sqlite3_bind_int64(s.handle, cI, C.sqlite3_int64(v.(int64)))
 		case "string":
-			bindRes = C.sqlite3_bind_text(s.handle, cI, C.CString(v.(string)), -1, C.SQLITE_STATIC)
+			cStr := C.CString(v.(string))
+			bindRes = C.sqlite3_bind_text(s.handle, cI, cStr, -1, C.SQLITE_TRANSIENT)
+			C.free(unsafe.Pointer(cStr))
 		case "nil":
 			bindRes = C.sqlite3_bind_null(s.handle, cI)
 		default:
