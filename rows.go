@@ -90,7 +90,7 @@ func (r *sqliteRows) processCurrentRow(dest []driver.Value) error {
 			cBlob := C.sqlite3_column_blob(handle, cI)
 
 			buf := make([]byte, int(cSize))
-			C.memcpy(cBlob, unsafe.Pointer(&buf[0]), C.size_t(cSize))
+			C.memcpy(unsafe.Pointer(&buf[0]), cBlob, C.size_t(cSize))
 			dest[i] = buf
 		case valueTypeNull:
 			dest[i] = nil
