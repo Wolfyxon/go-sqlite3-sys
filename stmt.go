@@ -81,7 +81,7 @@ func (s *sqliteStmt) Close() error {
 func (s *sqliteStmt) bindArgs(args []driver.Value) error {
 	for i, v := range args {
 		cI := C.int(i + 1)
-		valType := reflect.TypeOf(v).Name()
+		valType := reflect.TypeOf(v).Kind().String()
 
 		var bindRes any
 
@@ -96,6 +96,9 @@ func (s *sqliteStmt) bindArgs(args []driver.Value) error {
 			C.free(unsafe.Pointer(cStr))
 		case "nil":
 			bindRes = C.sqlite3_bind_null(s.handle, cI)
+		case "slice":
+			blob := v.([]byte)
+			bindRes = C.sqlite3_bind_blob(s.handle, cI, unsafe.Pointer(&blob[0]), C.int(len(blob)), C.SQLITE_TRANSIENT)
 		default:
 			return fmt.Errorf("Unsupported type '%s'", valType)
 		}
