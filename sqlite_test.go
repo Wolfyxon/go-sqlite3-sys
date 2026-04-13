@@ -96,7 +96,7 @@ func TestMain(t *testing.T) {
 
 		for i := range testBlobLen {
 			if row.data[i] != testBlob[i] {
-				log.Fatalf("Blobs don't match")
+				log.Fatalf("Blobs don't match:\n '%s' != '%s'", testBlob, row.data)
 			}
 		}
 	}
