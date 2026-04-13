@@ -76,6 +76,8 @@ func (r *sqliteRows) processCurrentRow(dest []driver.Value) error {
 		handle := r.stmt.handle
 
 		switch valType {
+		case valueTypeUnknown:
+			return fmt.Errorf("Could not determine type of column %d", i)
 		case valueTypeInt:
 			dest[i] = int(C.sqlite3_column_int(handle, cI))
 		case valueTypeFloat:
@@ -92,7 +94,7 @@ func (r *sqliteRows) processCurrentRow(dest []driver.Value) error {
 		case valueTypeNull:
 			dest[i] = nil
 		default:
-			return fmt.Errorf("Driver bug: sqlite type ID '%d' not implemented", valType)
+			return fmt.Errorf("Driver bug: sqlite type ID '%d' not implemented. Column: %d", valType, i)
 		}
 	}
 
