@@ -13,7 +13,7 @@ type testRow struct {
 }
 
 func TestMain(t *testing.T) {
-	db, err := sql.Open("sqlite", "a.db")
+	db, err := sql.Open("sqlite", ":memory:")
 
 	if err != nil {
 		log.Fatal("Open error: ", err)
