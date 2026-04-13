@@ -15,7 +15,7 @@ type sqliteDriver struct{}
 var _ = (*sqliteDriver)(nil) // allows to import the module without using any stuff declared here
 
 func init() {
-	sql.Register("sqlite", &sqliteDriver{})
+	sql.Register("sqlite-go", &sqliteDriver{})
 }
 
 func (d *sqliteDriver) Open(filePath string) (driver.Conn, error) {
