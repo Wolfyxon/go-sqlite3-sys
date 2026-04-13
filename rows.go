@@ -41,8 +41,7 @@ func (r *sqliteRows) Next(dest []driver.Value) error {
 	stepRes := C.sqlite3_step(r.stmt.handle)
 
 	if stepRes == C.SQLITE_ROW {
-		r.processCurrentRow(dest)
-		return nil
+		return r.processCurrentRow(dest)
 	}
 
 	if stepRes == C.SQLITE_DONE {
@@ -57,7 +56,7 @@ func (r *sqliteRows) Next(dest []driver.Value) error {
 		return fmt.Errorf("Failed to lock database")
 	}
 
-	return nil
+	return fmt.Errorf("Driver bug: unhandled result of sqlite3_step: %d", stepRes)
 }
 
 func (r *sqliteRows) Close() error {
@@ -70,7 +69,7 @@ func (r *sqliteRows) Close() error {
 	return nil
 }
 
-func (r *sqliteRows) processCurrentRow(dest []driver.Value) {
+func (r *sqliteRows) processCurrentRow(dest []driver.Value) error {
 	for i := range r.getColumnCount() {
 		valType := r.getColumnValueType(i)
 		cI := C.int(i)
@@ -90,11 +89,14 @@ func (r *sqliteRows) processCurrentRow(dest []driver.Value) {
 
 			buf := make([]byte, int(cSize))
 			C.memcpy(cBlob, unsafe.Pointer(&buf[0]), C.size_t(cSize))
-
 		case valueTypeNull:
 			dest[i] = nil
+		default:
+			return fmt.Errorf("Driver bug: sqlite type ID '%d' not implemented", valType)
 		}
 	}
+
+	return nil
 }
 
 func (r *sqliteRows) getColumnValueType(i int) valueType {
