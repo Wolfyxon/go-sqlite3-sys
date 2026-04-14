@@ -71,7 +71,7 @@ func (s *sqliteStmt) Close() error {
 	res := C.sqlite3_finalize(s.handle)
 
 	if res != 0 {
-		return fmt.Errorf("Failed to finalize sqlite statement: %d", res)
+		return getErrorFromCode(res)
 	}
 
 	return nil
@@ -103,7 +103,7 @@ func (s *sqliteStmt) bindArgs(args []driver.Value) error {
 		}
 
 		if bindRes != C.int(0) {
-			return fmt.Errorf("Failed to bind arg %d: %d", i, bindRes)
+			return fmt.Errorf("Failed to bind arg %d: %d", i, getErrorFromCode(bindRes.(C.int)))
 		}
 	}
 

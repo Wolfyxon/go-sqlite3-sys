@@ -32,7 +32,7 @@ func (c *sqliteConn) Prepare(query string) (driver.Stmt, error) {
 	C.free(unsafe.Pointer(cQuery))
 
 	if res != 0 {
-		return nil, fmt.Errorf("sqlite error: %d", res)
+		return nil, getErrorFromCode(res)
 	}
 
 	return &sqliteStmt{
@@ -51,7 +51,7 @@ func (c *sqliteConn) Begin() (driver.Tx, error) {
 	C.free(unsafe.Pointer(cFilePath))
 
 	if res != 0 {
-		return nil, fmt.Errorf("Failed to open sqlite database: %d", res)
+		return nil, getErrorFromCode(res)
 	}
 
 	c.handle = handle
