@@ -48,12 +48,11 @@ func (s *sqliteStmt) Exec(args []driver.Value) (driver.Result, error) {
 			break
 		}
 
-		if stepRes == C.SQLITE_ERROR {
-			return nil, fmt.Errorf("sqlite error")
-		}
+		err := getErrorFromCode(stepRes)
 
-		if stepRes == C.SQLITE_BUSY {
-			return nil, fmt.Errorf("unable to lock database")
+		if err != nil {
+			C.sqlite3_reset(s.handle)
+			return nil, err
 		}
 	}
 

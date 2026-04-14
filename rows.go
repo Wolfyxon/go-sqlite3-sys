@@ -48,15 +48,14 @@ func (r *sqliteRows) Next(dest []driver.Value) error {
 		return io.EOF
 	}
 
-	if stepRes == C.SQLITE_ERROR {
-		return fmt.Errorf("SQLite error")
+	err := getErrorFromCode(stepRes)
+
+	if err != nil {
+		C.sqlite3_reset(r.stmt.handle)
+		return err
 	}
 
-	if stepRes == C.SQLITE_BUSY {
-		return fmt.Errorf("Failed to lock database")
-	}
-
-	return fmt.Errorf("Driver bug: unhandled result of sqlite3_step: %d", stepRes)
+	return nil
 }
 
 func (r *sqliteRows) Close() error {
