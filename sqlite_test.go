@@ -62,6 +62,16 @@ func TestMain(t *testing.T) {
 		log.Fatal("Insert changes not 1: ", insertChanges)
 	}
 
+	id, idErr := insertRes.LastInsertId()
+
+	if idErr != nil {
+		log.Fatal("Failed to get last insert id: ", idErr)
+	}
+
+	if id != 1 {
+		log.Fatalf("Last insert id %d != 1", id)
+	}
+
 	rows, err := db.Query("SELECT * FROM test")
 
 	if err != nil {

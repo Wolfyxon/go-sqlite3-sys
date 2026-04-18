@@ -12,7 +12,9 @@ type sqliteResult struct {
 }
 
 func (r *sqliteResult) LastInsertId() (int64, error) {
-	return 0, nil
+	cId := C.sqlite3_last_insert_rowid(r.stmt.connection.handle)
+
+	return int64(cId), nil
 }
 
 func (r *sqliteResult) RowsAffected() (int64, error) {
